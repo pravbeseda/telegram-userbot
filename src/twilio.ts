@@ -1,19 +1,14 @@
 const twilio = require("twilio");
-import * as dotenv from "dotenv";
+import { CONFIG } from "../config";
 
-dotenv.config();
-
-const client = new twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN,
-);
+const client = new twilio(CONFIG.twilioAccountSid, CONFIG.twilioAuthToken);
 
 export const makeCall = () => {
   client.calls
     .create({
       url: "http://demo.twilio.com/docs/voice.xml",
-      to: process.env.PHONE,
-      from: process.env.ALARM_FROM_PHONE,
+      to: CONFIG.phone,
+      from: CONFIG.alarmFromPhone,
     })
     .then((call) => console.log("Call started:", call.sid))
     .catch((err) => console.error(err));
