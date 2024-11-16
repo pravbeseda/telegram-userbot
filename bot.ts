@@ -3,11 +3,15 @@ import { StringSession } from "telegram/sessions";
 import * as readline from "readline";
 import * as dotenv from "dotenv";
 import OpenAI from "openai";
+import { makeCall } from "./src/twilio";
+
+const LISTEN_TO_CHATS = ["ghfjhgfkjfojhasfewyr"];
 
 dotenv.config();
 
 const PROMPT = `Анализируй сообщение. Если человек предлагает продать рубли или убли или деревянные,
-или поменять рубли на тенге, то отвечай коротко: yes. Во всех остальных случаях отвечай: no.`;
+или поменять рубли на тенге, или спрашивает кому нужны рубли, то отвечай одной цифрой: 1. 
+Во всех остальных случаях отвечай: 0.`;
 
 const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH || "";
@@ -28,36 +32,19 @@ const askQuestion = (query: string): Promise<string> => {
   );
 };
 
-async function getOpenAIResponse(message: string): Promise<string> {
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini",
-    messages: [
-      { role: "system", content: PROMPT },
-      { role: "user", content: message },
-    ],
-  });
-
-  return completion.choices[0].message.content || "";
-}
-
 async function main() {
   const client = new TelegramClient(session, apiId, apiHash, {
     connectionRetries: 5,
   });
 
-  // Подключаемся к Telegram
   await client.start({
     phoneNumber: () => Promise.resolve(process.env.PHONE || ""), //  async () => await askQuestion("Введите номер телефона: "),
-    password: async () => await askQuestion("Введите пароль: "),
-    phoneCode: async () => await askQuestion("Введите код из Telegram: "),
+    password: async () => await askQuestion("Password: "),
+    phoneCode: async () => await askQuestion("Code from Telegram: "),
     onError: (err) => console.log(err),
   });
 
-  console.log("Бот подключен!");
   client.session.save();
-
-  // Прослушивание сообщений в определенных чатах
-  const targetChats = ["ghfjhgfkjfojhasfewyr"];
 
   client.addEventHandler(async (event) => {
     if (!event.message || !(event.message instanceof Api.Message)) {
@@ -72,16 +59,21 @@ async function main() {
     if (
       "username" in chat &&
       chat.username &&
-      targetChats.includes(chat.username)
+      LISTEN_TO_CHATS.includes(chat.username)
     ) {
       const userMessage = message.message;
+      console.log("New message:", userMessage);
 
       try {
         const aiResponse = await getOpenAIResponse(userMessage);
-        if (aiResponse === "yes") {
+        console.log("aiResponse:", aiResponse);
+        if (aiResponse.includes("1")) {
+          console.log("Sending answer...");
           await client.sendMessage(chat, {
             message: "Возьму!",
           });
+          console.log("Calling...");
+          makeCall();
         }
       } catch (error) {
         console.error("Error when interacting with OpenAI:", error);
@@ -93,3 +85,15 @@ async function main() {
 }
 
 main().catch((err) => console.error("Error:", err));
+
+async function getOpenAIResponse(message: string): Promise<string> {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+      { role: "system", content: PROMPT },
+      { role: "user", content: message },
+    ],
+  });
+
+  return completion.choices[0].message.content || "";
+}
