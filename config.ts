@@ -10,6 +10,7 @@ export const CONFIG = {
   apiHash: process.env.API_HASH || "",
   phone: process.env.PHONE || "",
   listenToChats: (process.env.LISTEN_TO_CHATS || "").split(","),
+  openaiApiKey: process.env.OPENAI_API_KEY,
   prompt: PROMPT,
   alarmFromPhone: process.env.ALARM_FROM_PHONE || "",
   twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || "",

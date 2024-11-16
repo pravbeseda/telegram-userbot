@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { CONFIG } from "../config";
 
-const openai = new OpenAI();
+const openai = new OpenAI({ apiKey: CONFIG.openaiApiKey });
 
 export async function getOpenAIResponse(message: string): Promise<string> {
   const completion = await openai.chat.completions.create({
