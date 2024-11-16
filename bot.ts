@@ -4,6 +4,8 @@ import { CONFIG } from "./config";
 import { askQuestion } from "./src/utils";
 import { handleNewMessage } from "./src/handlers";
 
+let isActive = true;
+
 async function main() {
   const client = new TelegramClient(
     new StringSession(""),
@@ -25,8 +27,52 @@ async function main() {
 
   client.addEventHandler(async (event) => {
     if (!event.message || !(event.message instanceof Api.Message)) {
+      return; // Not a message
+    }
+
+    const chatId = event.message.peerId;
+    const userMessage = event.message.message;
+    const chat = await client.getEntity(chatId);
+    if (
+      !(
+        "username" in chat &&
+        chat.username &&
+        CONFIG.listenToChats.includes(chat.username)
+      )
+    ) {
+      return; // Not listening to this chat
+    }
+
+    // Commands
+    const sayStatus = async () => {
+      await client.sendMessage(chatId, {
+        message: getStatus(),
+        replyTo: event.message.id,
+      });
+    };
+
+    if (userMessage === "/start") {
+      isActive = true;
+      await sayStatus();
       return;
     }
+
+    if (userMessage === "/stop") {
+      isActive = false;
+      await sayStatus();
+      return;
+    }
+
+    if (userMessage === "/status") {
+      await sayStatus();
+      return;
+    }
+
+    if (!isActive) {
+      console.log("Bot is inactive. Ignoring message.");
+      return;
+    }
+
     await handleNewMessage(client, event.message);
   });
 
@@ -34,3 +80,7 @@ async function main() {
 }
 
 main().catch((err) => console.error("Error:", err));
+
+function getStatus(): string {
+  return isActive ? "Bot is active" : "Bot is stopped";
+}
