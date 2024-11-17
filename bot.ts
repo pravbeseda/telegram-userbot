@@ -35,6 +35,7 @@ const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
       onError: (err) => console.log(err),
     });
     saveSession(client.session as StringSession);
+    client.session.save();
   } else {
     await client.connect();
   }
