@@ -24,7 +24,7 @@ async function main() {
   );
 
   await client.start({
-    phoneNumber: async () => await askQuestion("Phone: "), //Promise.resolve(CONFIG.phone || ""),
+    phoneNumber: async () => CONFIG.phone || "",
     password: async () => await askQuestion("Password: "),
     phoneCode: async () => await askQuestion("Code from Telegram: "),
     onError: (err) => console.log(err),
