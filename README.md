@@ -1,5 +1,6 @@
 User bot for telegram. It's used for monitoring for certain messages and sending answers to them.
-Also, it starts a phone call to alarm you.
+It uses OpenAI API to analise messages.
+Also, it starts a phone call to alarm you (via Twilio).
 
 ## Installation
 ```bash
