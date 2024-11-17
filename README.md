@@ -1,5 +1,5 @@
 User bot for telegram. It's used for monitoring for certain messages and sending answers to them.
-Also, it starts a phone call to alarm me.
+Also, it starts a phone call to alarm you.
 
 ## Installation
 ```bash
