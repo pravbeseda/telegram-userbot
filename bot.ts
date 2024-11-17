@@ -48,8 +48,11 @@ const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
     const chatId = event.message.peerId;
     const userMessage: string = event.message.message || "";
     const chat = await client.getEntity(chatId);
-    const chatName =
-      "username" in chat ? (chat.username ?? "unknown") : "unknown";
+    const chatName = "title" in chat ? (chat.title ?? "unknown") : "unknown";
+
+    if (chatName === "unknown") {
+      console.log({ chatName, userMessage, chat });
+    }
 
     if (!isListeningToChat(chatName) || !isAdmin(chatName)) {
       return;
@@ -87,7 +90,7 @@ const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
 
     if (
       isWithinWorkingHours() &&
-      isEnoughTimeSinceLastMessage(chatId) &&
+      isEnoughTimeSinceLastMessage(chatName) &&
       containsKeywords(userMessage)
     ) {
       await handleNewMessage(client, event.message);
@@ -99,15 +102,15 @@ function getStatus(): string {
   return isActive ? "Bot is active" : "Bot is stopped";
 }
 
-function isEnoughTimeSinceLastMessage(chatId: string): boolean {
-  const lastTimestamp = lastMessageTimestamps[chatId] || 0;
+function isEnoughTimeSinceLastMessage(chatName: string): boolean {
+  const lastTimestamp = lastMessageTimestamps[chatName] || 0;
   const currentTimestamp = Date.now();
 
   if (currentTimestamp - lastTimestamp < MESSAGE_COOLDOWN_MS) {
-    console.log(`Cooldown active for chat ${chatId}.`);
+    console.log(`Cooldown active for chat ${chatName}.`);
     return false;
   }
 
-  lastMessageTimestamps[chatId] = currentTimestamp;
+  lastMessageTimestamps[chatName] = currentTimestamp;
   return true;
 }
