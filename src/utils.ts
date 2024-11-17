@@ -49,7 +49,7 @@ export function isWithinWorkingHours(): boolean {
 }
 
 export function containsKeywords(message: string): boolean {
-  const keywords = /(р\.|руб|убл|дерев|продам|поменяю|обменяю|отдам)/i;
+  const keywords = /(р\.|руб|убл|дерев|продам|меняю|отдам|есть)/i;
   return keywords.test(message);
 }
 
