@@ -1,5 +1,9 @@
 import * as readline from "readline";
 import { CONFIG } from "../config";
+import { StringSession } from "telegram/sessions";
+import * as fs from "node:fs";
+
+const sessionFile = ".session";
 
 export const askQuestion = (query: string): Promise<string> => {
   const rl = readline.createInterface({
@@ -42,4 +46,17 @@ export function isWithinWorkingHours(): boolean {
   }
 
   return result;
+}
+
+export function loadSession(): StringSession {
+  if (fs.existsSync(sessionFile)) {
+    const sessionString = fs.readFileSync(sessionFile, "utf-8");
+    return new StringSession(sessionString);
+  }
+  return new StringSession("");
+}
+
+export function saveSession(session: StringSession) {
+  const sessionString = session.save();
+  fs.writeFileSync(sessionFile, sessionString);
 }

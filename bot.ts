@@ -1,5 +1,5 @@
 import { Api, TelegramClient } from "telegram";
-import { StringSession } from "telegram/sessions";
+import { StoreSession } from "telegram/sessions";
 import { CONFIG } from "./config";
 import {
   askQuestion,
@@ -12,10 +12,11 @@ import { handleNewMessage } from "./src/handlers";
 let isActive = true;
 const lastMessageTimestamps: Record<string, number> = {};
 const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
+const storeSession = new StoreSession("bot_session");
 
-async function main() {
+(async () => {
   const client = new TelegramClient(
-    new StringSession(""),
+    storeSession,
     CONFIG.apiId,
     CONFIG.apiHash,
     {
@@ -23,14 +24,17 @@ async function main() {
     },
   );
 
-  await client.start({
-    phoneNumber: async () => CONFIG.phone || "",
-    password: async () => await askQuestion("Password: "),
-    phoneCode: async () => await askQuestion("Code from Telegram: "),
-    onError: (err) => console.log(err),
-  });
+  await client.connect();
 
-  client.session.save();
+  if (!client.connected) {
+    await client.start({
+      phoneNumber: async () => CONFIG.phone || "",
+      password: async () => await askQuestion("Password: "),
+      phoneCode: async () => await askQuestion("Code from Telegram: "),
+      onError: (err) => console.log(err),
+    });
+    client.session.save();
+  }
 
   client.addEventHandler(async (event) => {
     if (!event.message || !(event.message instanceof Api.Message)) {
@@ -83,9 +87,7 @@ async function main() {
   });
 
   console.log("Userbot started...");
-}
-
-main().catch((err) => console.error("Error:", err));
+})().catch((err) => console.error("Error:", err));
 
 function getStatus(): string {
   return isActive ? "Bot is active" : "Bot is stopped";
