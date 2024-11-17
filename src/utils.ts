@@ -48,6 +48,15 @@ export function isWithinWorkingHours(): boolean {
   return result;
 }
 
+export function containsKeywords(message: string): boolean {
+  const keywords = /(р\.|руб|убл|дерев|продам|поменяю|обменяю|отдам)/i;
+  return keywords.test(message);
+}
+
+export function isSessionSaved(): boolean {
+  return fs.existsSync(sessionFile);
+}
+
 export function loadSession(): StringSession {
   if (fs.existsSync(sessionFile)) {
     const sessionString = fs.readFileSync(sessionFile, "utf-8");

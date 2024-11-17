@@ -1,22 +1,25 @@
 import { Api, TelegramClient } from "telegram";
-import { StoreSession } from "telegram/sessions";
+import { StringSession } from "telegram/sessions";
 import { CONFIG } from "./config";
 import {
   askQuestion,
+  containsKeywords,
   isAdmin,
   isListeningToChat,
+  isSessionSaved,
   isWithinWorkingHours,
+  loadSession,
+  saveSession,
 } from "./src/utils";
 import { handleNewMessage } from "./src/handlers";
 
 let isActive = true;
 const lastMessageTimestamps: Record<string, number> = {};
 const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
-const storeSession = new StoreSession("bot_session");
 
 (async () => {
   const client = new TelegramClient(
-    storeSession,
+    loadSession(),
     CONFIG.apiId,
     CONFIG.apiHash,
     {
@@ -24,25 +27,26 @@ const storeSession = new StoreSession("bot_session");
     },
   );
 
-  await client.connect();
-
-  if (!client.connected) {
+  if (!isSessionSaved()) {
     await client.start({
       phoneNumber: async () => CONFIG.phone || "",
       password: async () => await askQuestion("Password: "),
       phoneCode: async () => await askQuestion("Code from Telegram: "),
       onError: (err) => console.log(err),
     });
-    client.session.save();
+    saveSession(client.session as StringSession);
+  } else {
+    await client.connect();
   }
+
+  console.log("Userbot started... Connected:", client.connected);
 
   client.addEventHandler(async (event) => {
     if (!event.message || !(event.message instanceof Api.Message)) {
       return; // Not a message
     }
-
     const chatId = event.message.peerId;
-    const userMessage = event.message.message;
+    const userMessage: string = event.message.message || "";
     const chat = await client.getEntity(chatId);
     const chatName =
       "username" in chat ? (chat.username ?? "unknown") : "unknown";
@@ -81,12 +85,14 @@ const storeSession = new StoreSession("bot_session");
       return;
     }
 
-    if (isWithinWorkingHours() && isEnoughTimeSinceLastMessage(chatId)) {
+    if (
+      isWithinWorkingHours() &&
+      isEnoughTimeSinceLastMessage(chatId) &&
+      containsKeywords(userMessage)
+    ) {
       await handleNewMessage(client, event.message);
     }
   });
-
-  console.log("Userbot started...");
 })().catch((err) => console.error("Error:", err));
 
 function getStatus(): string {

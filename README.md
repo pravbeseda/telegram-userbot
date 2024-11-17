@@ -31,17 +31,3 @@ or
 ```bash
 node --import tsx bot.ts
 ```
-
-## Server usage
-```bash
-apt install tmux
-tmux new -s bot
-tsx bot.ts
-```
-Enter telegram code and press enter.
-Ensure that the bot is running.
-Then you can close the terminal.
-
-- To attach to the session next time, run `tmux attach -t bot`.
-- To list sessions: `tmux ls`
-- To kill the session: `tmux kill-session -t bot`
