@@ -17,7 +17,7 @@ async function main() {
   );
 
   await client.start({
-    phoneNumber: () => Promise.resolve(CONFIG.phone || ""), //  async () => await askQuestion("Введите номер телефона: "),
+    phoneNumber: () => Promise.resolve(CONFIG.phone || ""),
     password: async () => await askQuestion("Password: "),
     phoneCode: async () => await askQuestion("Code from Telegram: "),
     onError: (err) => console.log(err),
@@ -33,14 +33,11 @@ async function main() {
     const chatId = event.message.peerId;
     const userMessage = event.message.message;
     const chat = await client.getEntity(chatId);
-    if (
-      !(
-        "username" in chat &&
-        chat.username &&
-        CONFIG.listenToChats.includes(chat.username)
-      )
-    ) {
-      return; // Not listening to this chat
+    const chatName =
+      "username" in chat ? (chat.username ?? "unknown") : "unknown";
+
+    if (!isListeningToChat(chatName)) {
+      return;
     }
 
     // Commands
@@ -51,19 +48,19 @@ async function main() {
       });
     };
 
-    if (userMessage === "/start") {
+    if (userMessage === "/start" && isAdmin(chatName)) {
       isActive = true;
       await sayStatus();
       return;
     }
 
-    if (userMessage === "/stop") {
+    if (userMessage === "/stop" && isAdmin(chatName)) {
       isActive = false;
       await sayStatus();
       return;
     }
 
-    if (userMessage === "/status") {
+    if (userMessage === "/status" && isAdmin(chatName)) {
       await sayStatus();
       return;
     }
@@ -83,4 +80,12 @@ main().catch((err) => console.error("Error:", err));
 
 function getStatus(): string {
   return isActive ? "Bot is active" : "Bot is stopped";
+}
+
+function isListeningToChat(chatName: string): boolean {
+  return CONFIG.listenToChats.includes(chatName);
+}
+
+function isAdmin(chatName: string): boolean {
+  return CONFIG.adminChats.includes(chatName);
 }

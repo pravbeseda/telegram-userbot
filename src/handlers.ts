@@ -20,6 +20,7 @@ export async function handleNewMessage(
       console.log("Sending answer...");
       await client.sendMessage(chat, {
         message: "Возьму!",
+        replyTo: message.id,
       });
 
       console.log("Calling...");
