@@ -1,4 +1,5 @@
 import * as readline from "readline";
+import { CONFIG } from "../config";
 
 export const askQuestion = (query: string): Promise<string> => {
   const rl = readline.createInterface({
@@ -13,3 +14,11 @@ export const askQuestion = (query: string): Promise<string> => {
     });
   });
 };
+
+export function isListeningToChat(chatName: string): boolean {
+  return CONFIG.listenToChats.includes(chatName);
+}
+
+export function isAdmin(chatName: string): boolean {
+  return CONFIG.adminChats.includes(chatName);
+}

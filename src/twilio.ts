@@ -1,7 +1,7 @@
-const twilio = require("twilio");
+import twilio from "twilio";
 import { CONFIG } from "../config";
 
-const client = new twilio(CONFIG.twilioAccountSid, CONFIG.twilioAuthToken);
+const client = twilio(CONFIG.twilioAccountSid, CONFIG.twilioAuthToken);
 
 export const makeCall = () => {
   client.calls

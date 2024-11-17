@@ -1,10 +1,12 @@
 import { Api, TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions";
 import { CONFIG } from "./config";
-import { askQuestion } from "./src/utils";
+import { askQuestion, isAdmin, isListeningToChat } from "./src/utils";
 import { handleNewMessage } from "./src/handlers";
 
 let isActive = true;
+const lastMessageTimestamps: Record<string, number> = {};
+const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
 
 async function main() {
   const client = new TelegramClient(
@@ -36,7 +38,7 @@ async function main() {
     const chatName =
       "username" in chat ? (chat.username ?? "unknown") : "unknown";
 
-    if (!isListeningToChat(chatName)) {
+    if (!isListeningToChat(chatName) || !isAdmin(chatName)) {
       return;
     }
 
@@ -70,7 +72,9 @@ async function main() {
       return;
     }
 
-    await handleNewMessage(client, event.message);
+    if (isEnoughTimeSinceLastMessage(chatId)) {
+      await handleNewMessage(client, event.message);
+    }
   });
 
   console.log("Userbot started...");
@@ -82,10 +86,15 @@ function getStatus(): string {
   return isActive ? "Bot is active" : "Bot is stopped";
 }
 
-function isListeningToChat(chatName: string): boolean {
-  return CONFIG.listenToChats.includes(chatName);
-}
+function isEnoughTimeSinceLastMessage(chatId: string): boolean {
+  const lastTimestamp = lastMessageTimestamps[chatId] || 0;
+  const currentTimestamp = Date.now();
 
-function isAdmin(chatName: string): boolean {
-  return CONFIG.adminChats.includes(chatName);
+  if (currentTimestamp - lastTimestamp < MESSAGE_COOLDOWN_MS) {
+    console.log(`Cooldown active for chat ${chatId}.`);
+    return false;
+  }
+
+  lastMessageTimestamps[chatId] = currentTimestamp;
+  return true;
 }

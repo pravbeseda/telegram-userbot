@@ -10,6 +10,7 @@ export const CONFIG = {
   apiHash: process.env.API_HASH || "",
   phone: process.env.PHONE || "",
   listenToChats: (process.env.LISTEN_TO_CHATS || "").split(","),
+  cooldownMinutes: Number(process.env.COOLDOWN_MINUTES) || 10,
   adminChats: (process.env.ADMIN_CHATS || "").split(","),
   openaiApiKey: process.env.OPENAI_API_KEY,
   prompt: PROMPT,
