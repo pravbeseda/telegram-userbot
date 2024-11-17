@@ -17,4 +17,7 @@ export const CONFIG = {
   alarmFromPhone: process.env.ALARM_FROM_PHONE || "",
   twilioAuthToken: process.env.TWILIO_AUTH_TOKEN || "",
   twilioAccountSid: process.env.TWILIO_ACCOUNT_SID || "",
+  timeFrom: process.env.TIME_FROM || "09:00",
+  timeTo: process.env.TIME_TO || "18:00",
+  timeZoneOffset: process.env.TIMEZONE_OFFSET || "+3",
 } as const;

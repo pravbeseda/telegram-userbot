@@ -1,7 +1,12 @@
 import { Api, TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions";
 import { CONFIG } from "./config";
-import { askQuestion, isAdmin, isListeningToChat } from "./src/utils";
+import {
+  askQuestion,
+  isAdmin,
+  isListeningToChat,
+  isWithinWorkingHours,
+} from "./src/utils";
 import { handleNewMessage } from "./src/handlers";
 
 let isActive = true;
@@ -72,7 +77,7 @@ async function main() {
       return;
     }
 
-    if (isEnoughTimeSinceLastMessage(chatId)) {
+    if (isWithinWorkingHours() && isEnoughTimeSinceLastMessage(chatId)) {
       await handleNewMessage(client, event.message);
     }
   });
