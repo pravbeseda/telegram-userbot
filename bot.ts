@@ -56,7 +56,6 @@ const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
     }
 
     if (!isListeningToChat(chatName) || !isAdmin(chatName)) {
-      console.log("Ignoring message from chat", chatName);
       return;
     }
 

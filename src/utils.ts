@@ -20,11 +20,6 @@ export const askQuestion = (query: string): Promise<string> => {
 };
 
 export function isListeningToChat(chatName: string): boolean {
-  console.log("isListeningToChat!!!", {
-    list: CONFIG.listenToChats,
-    chatName,
-    res: CONFIG.listenToChats.includes(chatName),
-  });
   return CONFIG.listenToChats.includes(chatName);
 }
 
