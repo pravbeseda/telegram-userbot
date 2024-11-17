@@ -14,8 +14,6 @@ import {
 import { handleNewMessage } from "./src/handlers";
 
 let isActive = true;
-const lastMessageTimestamps: Record<string, number> = {};
-const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
 
 (async () => {
   const client = new TelegramClient(
@@ -89,29 +87,12 @@ const MESSAGE_COOLDOWN_MS = CONFIG.cooldownMinutes * 60_000;
       return;
     }
 
-    if (
-      isWithinWorkingHours() &&
-      isEnoughTimeSinceLastMessage(chatName) &&
-      containsKeywords(userMessage)
-    ) {
-      await handleNewMessage(client, event.message);
+    if (isWithinWorkingHours() && containsKeywords(userMessage)) {
+      await handleNewMessage(client, event.message, chatName);
     }
   });
 })().catch((err) => console.error("Error:", err));
 
 function getStatus(): string {
   return isActive ? "Bot is active" : "Bot is stopped";
-}
-
-function isEnoughTimeSinceLastMessage(chatName: string): boolean {
-  const lastTimestamp = lastMessageTimestamps[chatName] || 0;
-  const currentTimestamp = Date.now();
-
-  if (currentTimestamp - lastTimestamp < MESSAGE_COOLDOWN_MS) {
-    console.log(`Cooldown active for chat ${chatName}.`);
-    return false;
-  }
-
-  lastMessageTimestamps[chatName] = currentTimestamp;
-  return true;
 }
