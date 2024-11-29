@@ -30,7 +30,7 @@ export async function handleNewMessage(
       console.log("Sending answer...");
       lastMessageTimestamps[chatName] = Date.now();
       await client.sendMessage(chat, {
-        message: "Возьму!",
+        message: "Возьму",
         replyTo: message.id,
       });
 

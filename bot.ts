@@ -49,13 +49,11 @@ let isActive = true;
     const chat = await client.getEntity(chatId);
     const chatName = "title" in chat ? (chat.title ?? "unknown") : "unknown";
 
-    if (chatName === "unknown") {
-      console.log({ chatName, userMessage, chat });
-    }
-
-    if (!isListeningToChat(chatName) || !isAdmin(chatName)) {
+    if (!isListeningToChat(chatName) && !isAdmin(chatName)) {
       return;
     }
+
+    console.log({ chatName, userMessage });
 
     // Commands
     const sayStatus = async () => {
